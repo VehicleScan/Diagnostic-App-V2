@@ -33,15 +33,19 @@ class SeekBarView @JvmOverloads constructor(
     private var minValue: Float = 0f
     private var maxValue: Float = 10000f
     private var currentValue: Float = 0f
-    private val baseBarHeight = 30f
-    private val cornerRadius = 15f
+    private val baseBarHeight = 50f
+    private val cornerRadius = 5f // Reduced for thin chunks
     private var unit: String = "rpm x1000"
     private val rect = RectF()
     private lateinit var gradient: LinearGradient
-    private val glowPaint = Paint().apply { isAntiAlias = true; maskFilter = BlurMaskFilter(10f, BlurMaskFilter.Blur.NORMAL) }
+    private val glowPaint = Paint().apply { isAntiAlias = true; maskFilter = BlurMaskFilter(12f, BlurMaskFilter.Blur.NORMAL) }
+
+    private val numChunks = 40 // Increased to span full range
+    private val chunkWidth = 8f // Width in dp
+    private val chunkGap = 2f // Gap between chunks in dp
 
     init {
-        configure(0f, 10000f, "rpm x1000")
+        configure(0f, 10000f, "rpm x1000") // Ensure initial configuration
     }
 
     fun configure(min: Float, max: Float, unitLabel: String) {
@@ -49,12 +53,14 @@ class SeekBarView @JvmOverloads constructor(
         minValue = min
         maxValue = max
         unit = unitLabel
-        currentValue = minValue
+        currentValue = minValue // Reset current value to min on configure
+        updateGradient() // Update gradient on configuration
         invalidate()
     }
 
     fun updateValue(value: Float) {
         currentValue = value.coerceIn(minValue, maxValue)
+        updateGradient() // Update gradient with new value
         invalidate()
     }
 
@@ -65,18 +71,10 @@ class SeekBarView @JvmOverloads constructor(
 
     private fun updateGradient() {
         val progressRatio = (currentValue - minValue) / (maxValue - minValue)
-        val startColor = interpolateColor(Color.argb(255, 245, 245, 255), Color.argb(255, 255, 50, 50), progressRatio) // Neon white to neon red
-        val endColor = interpolateColor(Color.argb(200, 245, 245, 255), Color.argb(200, 255, 50, 50), progressRatio)
-        gradient = LinearGradient(0f, 0f, width.toFloat(), 0f, intArrayOf(startColor, endColor), floatArrayOf(0f, 1f), Shader.TileMode.CLAMP)
+        val startColor = Color.WHITE // White at the start
+        val endColor = Color.RED // Red at the end
+        gradient = LinearGradient(0f, 0f, chunkWidth, 0f, intArrayOf(startColor, endColor), floatArrayOf(0f, 1f), Shader.TileMode.CLAMP)
         glowPaint.shader = gradient
-    }
-
-    private fun interpolateColor(startColor: Int, endColor: Int, fraction: Float): Int {
-        val a = (startColor shr 24 and 0xff) + ((endColor shr 24 and 0xff) - (startColor shr 24 and 0xff)) * fraction
-        val r = (startColor shr 16 and 0xff) + ((endColor shr 16 and 0xff) - (startColor shr 16 and 0xff)) * fraction
-        val g = (startColor shr 8 and 0xff) + ((endColor shr 8 and 0xff) - (startColor shr 8 and 0xff)) * fraction
-        val b = (startColor and 0xff) + ((endColor and 0xff) - (startColor and 0xff)) * fraction
-        return (a.toInt() shl 24) or (r.toInt() shl 16) or (g.toInt() shl 8) or b.toInt()
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -87,51 +85,65 @@ class SeekBarView @JvmOverloads constructor(
         val barStartX = (width - barLength) / 2
         val barEndX = barStartX + barLength
         val progressRatio = (currentValue - minValue) / (maxValue - minValue)
-        val progressX = barStartX + barLength * progressRatio
+        val progressChunks = (numChunks * progressRatio).coerceIn(0f, numChunks.toFloat()).toInt()
+        val progressX = barStartX + (barLength * progressRatio)
 
-        // Draw background track with tapered shape
+        // Adjust to span full barLength
+        val totalChunkWidth = numChunks * chunkWidth + (numChunks - 1) * chunkGap
+        val scaleFactor = barLength / totalChunkWidth
+        val scaledChunkWidth = chunkWidth * scaleFactor
+        val scaledChunkGap = chunkGap * scaleFactor
+
+        // Draw background track with chunk outlines
         barPaint.color = Color.argb(150, 100, 100, 100)
         barPaint.style = Paint.Style.FILL
-        val path = Path().apply {
-            moveTo(barStartX, barY - baseBarHeight / 2)
-            lineTo(barStartX + 10f, barY - baseBarHeight / 2) // Narrow start
-            lineTo(barEndX - 10f, barY - baseBarHeight / 2 + 10f) // Wider toward end
-            lineTo(barEndX, barY - baseBarHeight / 2 + 20f) // Maximum width
-            lineTo(barEndX, barY + baseBarHeight / 2 - 20f)
-            lineTo(barEndX - 10f, barY + baseBarHeight / 2 - 10f)
-            lineTo(barStartX + 10f, barY + baseBarHeight / 2)
-            close()
+        for (i in 0 until numChunks) {
+            val chunkStartX = barStartX + (scaledChunkWidth + scaledChunkGap) * i
+            val rectF = RectF(
+                chunkStartX,
+                barY - baseBarHeight / 2,
+                chunkStartX + scaledChunkWidth,
+                barY + baseBarHeight / 2
+            )
+            canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, barPaint)
         }
-        canvas.drawPath(path, barPaint)
 
-        // Draw progress with tapered shape and neon effect
+        // Draw progress chunks with white-to-red gradient
         barPaint.style = Paint.Style.FILL
-        val progressPath = Path().apply {
-            moveTo(barStartX, barY - baseBarHeight / 2)
-            lineTo(barStartX + 10f * progressRatio, barY - baseBarHeight / 2)
-            lineTo(progressX - 10f + 20f * progressRatio, barY - baseBarHeight / 2 + 10f * progressRatio)
-            lineTo(progressX, barY - baseBarHeight / 2 + 20f * progressRatio)
-            lineTo(progressX, barY + baseBarHeight / 2 - 20f * progressRatio)
-            lineTo(progressX - 10f + 20f * progressRatio, barY + baseBarHeight / 2 - 10f * progressRatio)
-            lineTo(barStartX + 10f * progressRatio, barY + baseBarHeight / 2)
-            close()
+        for (i in 0 until progressChunks) {
+            val chunkStartX = barStartX + (scaledChunkWidth + scaledChunkGap) * i
+            val rectF = RectF(
+                chunkStartX,
+                barY - baseBarHeight / 2,
+                chunkStartX + scaledChunkWidth,
+                barY + baseBarHeight / 2
+            )
+            canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, glowPaint)
         }
-        canvas.drawPath(progressPath, glowPaint)
 
-        // Draw border
+        // Draw border for each chunk
         barPaint.style = Paint.Style.STROKE
         barPaint.strokeWidth = 2f
         barPaint.color = Color.WHITE
-        canvas.drawPath(path, barPaint)
+        for (i in 0 until numChunks) {
+            val chunkStartX = barStartX + (scaledChunkWidth + scaledChunkGap) * i
+            val rectF = RectF(
+                chunkStartX,
+                barY - baseBarHeight / 2,
+                chunkStartX + scaledChunkWidth,
+                barY + baseBarHeight / 2
+            )
+            canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, barPaint)
+        }
 
         // Draw markers
         drawMarkers(canvas, barStartX, barEndX, barY)
 
         // Draw labels above the bar
         val textYAbove = barY - baseBarHeight - 15f
-        drawLabel(canvas, "${(minValue / 1000).roundToInt()}", barStartX, textYAbove, labelPaint)
-        drawLabel(canvas, "${(maxValue / 1000).roundToInt()}", barEndX, textYAbove, labelPaint)
-        drawLabel(canvas, "${((minValue + maxValue) / 2000).roundToInt()}", (barStartX + barEndX) / 2, textYAbove, labelPaint)
+        drawLabel(canvas, minValue.roundToInt().toString(), barStartX, textYAbove, labelPaint)
+        drawLabel(canvas, maxValue.roundToInt().toString(), barEndX, textYAbove, labelPaint)
+        drawLabel(canvas, ((minValue + maxValue) / 2).roundToInt().toString(), (barStartX + barEndX) / 2, textYAbove, labelPaint)
 
         // Draw unit label below the bar
         val textYBelow = barY + baseBarHeight + 35f
@@ -168,7 +180,7 @@ class SeekBarView @JvmOverloads constructor(
         barPaint.color = Color.rgb(255, 191, 0)
         barPaint.style = Paint.Style.FILL
         canvas.drawPath(path, barPaint)
-        val valueText = "${(currentValue / 1000).roundToInt()}"
+        val valueText = currentValue.roundToInt().toString()
         val textY = y - baseBarHeight / 2 - indicatorSize - 10f
         drawLabel(canvas, valueText, x, textY, labelPaint)
     }

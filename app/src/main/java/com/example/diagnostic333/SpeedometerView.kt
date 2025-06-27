@@ -122,16 +122,6 @@ class SpeedometerView @JvmOverloads constructor(
             }
         }
 
-        // Draw "mph" label
-        val mphValue = minValue + (maxValue - minValue) * 0.6f
-        val mphAngle = startAngle + ((mphValue - minValue) / (maxValue - minValue)) * sweepAngle
-        val mphRad = toRadians(mphAngle.toDouble()).toFloat()
-        textPaint.textSize = 24f
-        val mphTextRadius = innerRadius - 50
-        val mphTextX = centerX + mphTextRadius * cos(mphRad.toDouble()).toFloat()
-        val mphTextY = centerY + mphTextRadius * sin(mphRad.toDouble()).toFloat() + 8
-        canvas.drawText("mph", mphTextX, mphTextY, textPaint)
-
         // Draw needle
         val needleAngle = startAngle + ((currentValue - minValue) / (maxValue - minValue)) * sweepAngle
         val needleRad = toRadians(needleAngle.toDouble()).toFloat()
