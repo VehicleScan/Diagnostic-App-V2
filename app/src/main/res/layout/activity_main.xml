@@ -7,14 +7,28 @@
     android:background="@color/black">
 
     <com.example.diagnostic333.SpeedometerView
-        android:id="@+id/speedometer"
-        android:layout_width="320dp"
-        android:layout_height="239dp"
-        android:layout_gravity="center"
+        android:id="@+id/speedometer2"
+        android:layout_width="308dp"
+        android:layout_height="297dp"
+        android:layout_weight="1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.971"
+        app:layout_constraintHorizontal_bias="0.583"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.365" />
+
+    <com.example.diagnostic333.SpeedometerView
+        android:id="@+id/speedometer1"
+        android:layout_width="337dp"
+        android:layout_height="296dp"
+        android:layout_marginTop="115dp"
+        android:layout_weight="1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.998"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.991" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
