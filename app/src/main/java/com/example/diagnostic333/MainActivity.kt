@@ -28,6 +28,15 @@ class MainActivity : AppCompatActivity() {
         val speedometer2: SpeedometerView = findViewById(R.id.speedometer2)
         speedometer2.configure(0f, 300f, Color.RED)
 
+        val oilTempSeekBar: SeekBarView = findViewById(R.id.oilTempSeekBar)
+        oilTempSeekBar.configure(50f, 150f)
+
+        val tirePressureSeekBar: SeekBarView = findViewById(R.id.tirePressureSeekBar)
+        tirePressureSeekBar.configure(20f, 40f)
+
+        val massAirFlowSeekBar: SeekBarView = findViewById(R.id.massAirFlowSeekBar)
+        massAirFlowSeekBar.configure(0f, 200f)
+
         val handler = Handler(Looper.getMainLooper())
         val runnable = object : Runnable {
             override fun run() {
@@ -36,6 +45,12 @@ class MainActivity : AppCompatActivity() {
                 val randomValue2 = 20f + (0..280).random().toFloat()
                 speedometer2.updateValue(randomValue2)
                 handler.postDelayed(this, 2000)
+                val oilTemp = 50f + (0..100).random().toFloat()
+                oilTempSeekBar.updateValue(oilTemp)
+                val tirePressure = 20f + (0..20).random().toFloat()
+                tirePressureSeekBar.updateValue(tirePressure)
+                val massAirFlow = 0f + (0..200).random().toFloat()
+                massAirFlowSeekBar.updateValue(massAirFlow)
             }
         }
         handler.postDelayed(runnable, 2000)

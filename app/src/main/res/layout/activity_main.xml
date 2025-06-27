@@ -4,31 +4,73 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black">
+    android:background="@color/black"
+    android:padding="16dp">
+
+    <!-- Speedometer 1 (Left) -->
+
+    <!-- Speedometer 2 (Right) -->
+
+    <!-- Container for Seek Bars (Vertical Stack) -->
 
     <com.example.diagnostic333.SpeedometerView
         android:id="@+id/speedometer2"
-        android:layout_width="308dp"
-        android:layout_height="297dp"
+        android:layout_width="268dp"
+        android:layout_height="243dp"
         android:layout_weight="1"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.583"
+        app:layout_constraintHorizontal_bias="0.743"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.365" />
+        app:layout_constraintVertical_bias="0.503" />
 
     <com.example.diagnostic333.SpeedometerView
         android:id="@+id/speedometer1"
-        android:layout_width="337dp"
-        android:layout_height="296dp"
-        android:layout_marginTop="115dp"
+        android:layout_width="244dp"
+        android:layout_height="225dp"
         android:layout_weight="1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.998"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.991" />
+        app:layout_constraintVertical_bias="1.0" />
+
+    <LinearLayout
+        android:id="@+id/seekBarContainer"
+        android:layout_width="349dp"
+        android:layout_height="372dp"
+        android:orientation="vertical"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/speedometer2"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
+
+        <com.example.diagnostic333.SeekBarView
+            android:id="@+id/oilTempSeekBar"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="8dp"
+            android:layout_weight="1" />
+
+        <com.example.diagnostic333.SeekBarView
+            android:id="@+id/tirePressureSeekBar"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="8dp"
+            android:layout_weight="1" />
+
+        <com.example.diagnostic333.SeekBarView
+            android:id="@+id/massAirFlowSeekBar"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
