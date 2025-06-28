@@ -29,13 +29,13 @@ class MainActivity : AppCompatActivity() {
         speedometer2.configure(0f, 220f, Color.WHITE)
 
         val oilTempSeekBar: SeekBarView = findViewById(R.id.oilTempSeekBar)
-        oilTempSeekBar.configure(50f, 150f, "°C")
+        oilTempSeekBar.configure(50f, 150f, 0f)
 
         val tirePressureSeekBar: SeekBarView = findViewById(R.id.tirePressureSeekBar)
-        tirePressureSeekBar.configure(20f, 40f, "psi")
+        tirePressureSeekBar.configure(20f, 40f,0f)
 
         val massAirFlowSeekBar: SeekBarView = findViewById(R.id.massAirFlowSeekBar)
-        massAirFlowSeekBar.configure(0f, 200f, "g/s")
+        massAirFlowSeekBar.configure(0f, 200f, 0f)
 
         val handler = Handler(Looper.getMainLooper())
         val runnable = object : Runnable {

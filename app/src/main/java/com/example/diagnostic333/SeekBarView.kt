@@ -4,7 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
-import kotlin.math.roundToInt
+import kotlin.math.*
 
 class SeekBarView @JvmOverloads constructor(
     context: Context,
@@ -15,42 +15,35 @@ class SeekBarView @JvmOverloads constructor(
     private val barPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
-        textSize = 32f
-        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        textAlign = Paint.Align.CENTER
-        color = Color.rgb(255, 191, 0)
-    }
-    private val unitPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.FILL
-        textSize = 24f
-        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        textSize = 18f
+        typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
         textAlign = Paint.Align.CENTER
         color = Color.WHITE
+    }
+    private val valuePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+        textSize = 36f
+        typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)
+        textAlign = Paint.Align.CENTER
+        color = Color.rgb(255, 191, 0)
     }
 
     private var minValue = 0f
     private var maxValue = 10000f
     private var currentValue = 0f
-    private val baseBarHeight = 50f
-    private val cornerRadius = 8f
-    private var unit = "rpm x1000"
-    private lateinit var chunkColors: List<Int>
+    private val dashCount = 21
+    private val neonRed = Color.parseColor("#FF1744")
+    private val inactiveColor = Color.parseColor("#444444")
+    private val activeColor = Color.WHITE
+    private val padding = 60f
+    private val arcRadius = 200f
+    private val spacing = 40f
 
-    private val numChunks = 25
-    private val chunkWidth = 8f
-    private val chunkGap = 2f
-
-    init {
-        configure(minValue, maxValue, unit)
-    }
-
-    fun configure(min: Float, max: Float, unitLabel: String) {
-        require(min < max) { "minValue must be less than maxValue" }
+    fun configure(min: Float, max: Float, startValue: Float = min) {
+        require(min < max) { "min must be < max" }
         minValue = min
         maxValue = max
-        unit = unitLabel
-        currentValue = minValue
-        updateChunkColors()
+        currentValue = startValue.coerceIn(min, max)
         invalidate()
     }
 
@@ -59,107 +52,58 @@ class SeekBarView @JvmOverloads constructor(
         invalidate()
     }
 
-    private fun updateChunkColors() {
-        chunkColors = listOf(
-            Color.parseColor("#2C2C2C"), // Soft black
-            Color.parseColor("#3D3D3D"), // Charcoal
-            Color.parseColor("#5F5F5F"), // Slate
-            Color.parseColor("#888888"), // Medium gray
-            Color.parseColor("#A020F0"), // Neon purple
-            Color.parseColor("#FF1493"), // Neon pink
-            Color.parseColor("#FF4500"), // Neon orange
-            Color.parseColor("#FF3A3A"), // Bright red
-            Color.parseColor("#FF0000"), // Max red
-            Color.parseColor("#D40000"), // Deep red
-            Color.parseColor("#B00000"), // Darker red
-            Color.parseColor("#8B0000")  // Dark red for final punch
-        )
-    }
-
     override fun onDraw(canvas: Canvas) {
-        val width = width.toFloat()
-        val height = height.toFloat()
-        val barY = height / 2
-        val barLength = width * 0.85f
-        val barStartX = (width - barLength) / 2
-        val barEndX = barStartX + barLength
-        val progressRatio = (currentValue - minValue) / (maxValue - minValue)
-        val progressChunks = (numChunks * progressRatio).coerceIn(0f, numChunks.toFloat()).toInt()
-        val progressX = barStartX + (barLength * progressRatio)
+        super.onDraw(canvas)
 
-        val totalChunkWidth = numChunks * chunkWidth + (numChunks - 1) * chunkGap
-        val scaleFactor = barLength / totalChunkWidth
-        val scaledChunkWidth = chunkWidth * scaleFactor
-        val scaledChunkGap = chunkGap * scaleFactor
+        val centerX = width / 2f
+        val centerY = height / 2f - 40f
+        val ratio = (currentValue - minValue) / (maxValue - minValue)
+        val activeDashes = (dashCount * ratio).toInt()
 
-        for (i in 0 until progressChunks) {
-            val chunkStartX = barStartX + (scaledChunkWidth + scaledChunkGap) * i
-            val colorIndex = (i.toFloat() / numChunks * (chunkColors.size - 1)).roundToInt()
-            barPaint.color = chunkColors[colorIndex.coerceIn(0, chunkColors.lastIndex)]
-            barPaint.style = Paint.Style.FILL
-            val rectF = RectF(
-                chunkStartX,
-                barY - baseBarHeight / 2,
-                chunkStartX + scaledChunkWidth,
-                barY + baseBarHeight / 2
+        val segmentPositions = mutableListOf<Pair<Float, Float>>()
+
+        // First half (curved)
+        val arcSegmentCount = dashCount / 2
+        val arcStartAngle = 180f
+        val arcSweep = 90f
+        val arcSegmentAngle = arcSweep / (arcSegmentCount - 1)
+
+        for (i in 0 until arcSegmentCount) {
+            val angle = Math.toRadians((arcStartAngle + i * arcSegmentAngle).toDouble())
+            val x = centerX + arcRadius * cos(angle).toFloat()
+            val y = centerY + arcRadius * sin(angle).toFloat()
+            segmentPositions.add(Pair(x, y))
+        }
+
+        // Second half (straight)
+        val (startX, startY) = segmentPositions.last()
+        val straightSegmentCount = dashCount - arcSegmentCount
+        for (i in 1..straightSegmentCount) {
+            val x = startX + i * spacing
+            val y = startY
+            segmentPositions.add(Pair(x, y))
+        }
+
+        // Draw segments
+        for (i in 0 until dashCount) {
+            val (x, y) = segmentPositions[i]
+            barPaint.color = when {
+                i == dashCount - 1 -> neonRed
+                i < activeDashes -> activeColor
+                else -> inactiveColor
+            }
+
+            canvas.drawRoundRect(
+                RectF(x - 10f, y - 20f, x + 10f, y + 20f),
+                6f, 6f, barPaint
             )
-            canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, barPaint)
+
+            canvas.drawText("${i + 1}", x, y - 30f, labelPaint)
         }
 
-        barPaint.color = Color.argb(40, 100, 100, 100)
-        for (i in progressChunks until numChunks) {
-            val chunkStartX = barStartX + (scaledChunkWidth + scaledChunkGap) * i
-            val rectF = RectF(
-                chunkStartX,
-                barY - baseBarHeight / 2,
-                chunkStartX + scaledChunkWidth,
-                barY + baseBarHeight / 2
-            )
-            canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, barPaint)
-        }
-
-        drawMarkers(canvas, barStartX, barEndX, barY)
-
-        val textYAbove = barY - baseBarHeight - 20f
-        drawLabel(canvas, minValue.roundToInt().toString(), barStartX, textYAbove, labelPaint)
-        drawLabel(canvas, maxValue.roundToInt().toString(), barEndX, textYAbove, labelPaint)
-        drawLabel(canvas, ((minValue + maxValue) / 2).roundToInt().toString(), (barStartX + barEndX) / 2, textYAbove, labelPaint)
-
-        val textYBelow = barY + baseBarHeight + 40f
-        drawLabel(canvas, unit, (barStartX + barEndX) / 2, textYBelow, unitPaint)
-
-        drawCurrentValue(canvas, progressX, barY, progressRatio)
-    }
-
-    private fun drawMarkers(canvas: Canvas, startX: Float, endX: Float, centerY: Float) {
-        barPaint.style = Paint.Style.FILL
-        barPaint.color = Color.WHITE
-        val positions = floatArrayOf(0.25f, 0.5f, 0.75f)
-        positions.forEach { position ->
-            val x = startX + (endX - startX) * position
-            canvas.drawCircle(x, centerY, 5f, barPaint)
-        }
-    }
-
-    private fun drawLabel(canvas: Canvas, text: String, x: Float, y: Float, paint: Paint) {
-        val shadowPaint = Paint(paint).apply { color = Color.BLACK }
-        canvas.drawText(text, x + 2, y + 2, shadowPaint)
-        canvas.drawText(text, x, y, paint)
-    }
-
-    private fun drawCurrentValue(canvas: Canvas, x: Float, y: Float, ratio: Float) {
-        val indicatorSize = 20f
-        val path = Path().apply {
-            moveTo(x, y - baseBarHeight / 2 - indicatorSize / 2)
-            lineTo(x - indicatorSize / 2, y - baseBarHeight / 2)
-            lineTo(x + indicatorSize / 2, y - baseBarHeight / 2)
-            close()
-        }
-        barPaint.color = Color.rgb(255, 191, 0)
-        barPaint.style = Paint.Style.FILL
-        canvas.drawPath(path, barPaint)
-        val valueText = currentValue.roundToInt().toString()
-        val textY = y - baseBarHeight / 2 - indicatorSize - 12f
-        drawLabel(canvas, valueText, x, textY, labelPaint)
+        // Draw value text below center segment
+        val centerIndex = dashCount / 2
+        val (vx, vy) = segmentPositions[centerIndex]
+        canvas.drawText("${currentValue.roundToInt()} km/h", vx, vy + 50f, valuePaint)
     }
 }
