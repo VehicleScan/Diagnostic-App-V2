@@ -40,8 +40,8 @@
 
     <LinearLayout
         android:id="@+id/seekBarContainer"
-        android:layout_width="349dp"
-        android:layout_height="372dp"
+        android:layout_width="310dp"
+        android:layout_height="371dp"
         android:orientation="vertical"
         android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
