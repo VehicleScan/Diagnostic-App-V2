@@ -106,8 +106,17 @@ class SeekBarView @JvmOverloads constructor(
                 6f, 6f, barPaint
             )
 
-            val labelValue = (minValue + i * valuePerSegment).roundToInt()
-            canvas.drawText("$labelValue", x, y - 30f, labelPaint)
+            val precent = i.toFloat()/(dashCount-1)
+            if(precent in listOf(0f , 0.25f,0.5f,0.75f,1f)){
+                if(precent == 0f){
+                    val labelValue= (minValue+precent*(maxValue - minValue)).roundToInt()
+                    canvas.drawText("$labelValue",x-30f,y-20f,labelPaint)
+                }else{
+                    val labelValue= (minValue+precent*(maxValue - minValue)).roundToInt()
+                    canvas.drawText("$labelValue",x,y-30f,labelPaint)
+                }
+
+            }
         }
 
         // Draw current value below center segment

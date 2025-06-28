@@ -7,24 +7,18 @@
     android:background="@color/black"
     android:padding="16dp">
 
-    <!-- Speedometer 1 (Left) -->
-
-    <!-- Speedometer 2 (Right) -->
-
-    <!-- Container for Seek Bars (Vertical Stack) -->
-
     <com.example.diagnostic333.SpeedometerView
         android:id="@+id/speedometer2"
-        android:layout_width="268dp"
-        android:layout_height="243dp"
+        android:layout_width="273dp"
+        android:layout_height="249dp"
         android:layout_weight="1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.743"
+        app:layout_constraintHorizontal_bias="0.737"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.503" />
+        app:layout_constraintVertical_bias="0.735" />
 
     <com.example.diagnostic333.SpeedometerView
         android:id="@+id/speedometer1"
@@ -33,10 +27,21 @@
         android:layout_weight="1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.986"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
+
+    <com.example.diagnostic333.DigitalNumberWindowView
+        android:id="@+id/numberWindow"
+        android:layout_width="131dp"
+        android:layout_height="68dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.904" />
 
     <LinearLayout
         android:id="@+id/seekBarContainer"
