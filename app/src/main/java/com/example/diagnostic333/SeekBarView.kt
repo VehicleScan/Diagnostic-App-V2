@@ -59,6 +59,7 @@ class SeekBarView @JvmOverloads constructor(
         val centerY = height / 2f - 40f
         val ratio = (currentValue - minValue) / (maxValue - minValue)
         val activeDashes = (dashCount * ratio).toInt()
+        val thresholdIndex = (dashCount * 0.75f).toInt()
 
         val segmentPositions = mutableListOf<Pair<Float, Float>>()
 
@@ -85,10 +86,11 @@ class SeekBarView @JvmOverloads constructor(
         }
 
         // Draw segments
+        val valuePerSegment = (maxValue - minValue) / (dashCount - 1)
         for (i in 0 until dashCount) {
             val (x, y) = segmentPositions[i]
             barPaint.color = when {
-                i == dashCount - 1 -> neonRed
+                i >= thresholdIndex && i < activeDashes -> neonRed
                 i < activeDashes -> activeColor
                 else -> inactiveColor
             }
@@ -98,12 +100,14 @@ class SeekBarView @JvmOverloads constructor(
                 6f, 6f, barPaint
             )
 
-            canvas.drawText("${i + 1}", x, y - 30f, labelPaint)
+            // Draw actual value label above each bar
+            val labelValue = (minValue + i * valuePerSegment).roundToInt()
+            canvas.drawText("$labelValue", x, y - 30f, labelPaint)
         }
 
-        // Draw value text below center segment
+        // Draw current value below center segment
         val centerIndex = dashCount / 2
         val (vx, vy) = segmentPositions[centerIndex]
-        canvas.drawText("${currentValue.roundToInt()} km/h", vx, vy + 50f, valuePaint)
+        canvas.drawText("${currentValue.roundToInt()} km/h", vx, vy + 100f, valuePaint)
     }
 }

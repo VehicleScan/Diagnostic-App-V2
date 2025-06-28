@@ -53,8 +53,8 @@
 
         <com.example.diagnostic333.SeekBarView
             android:id="@+id/oilTempSeekBar"
-            android:layout_width="337dp"
-            android:layout_height="283dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_weight="1" />
 
         <com.example.diagnostic333.SeekBarView
