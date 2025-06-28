@@ -12,17 +12,15 @@ class SeekBarView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-    private val barPaint = Paint().apply { isAntiAlias = true }
-    private val labelPaint = Paint().apply {
-        isAntiAlias = true
+    private val barPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
         textSize = 32f
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         textAlign = Paint.Align.CENTER
         color = Color.rgb(255, 191, 0)
     }
-    private val unitPaint = Paint().apply {
-        isAntiAlias = true
+    private val unitPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
         textSize = 24f
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
@@ -30,21 +28,20 @@ class SeekBarView @JvmOverloads constructor(
         color = Color.WHITE
     }
 
-    private var minValue: Float = 0f
-    private var maxValue: Float = 10000f
-    private var currentValue: Float = 0f
+    private var minValue = 0f
+    private var maxValue = 10000f
+    private var currentValue = 0f
     private val baseBarHeight = 50f
-    private val cornerRadius = 5f
-    private var unit: String = "rpm x1000"
-    private val rect = RectF()
+    private val cornerRadius = 8f
+    private var unit = "rpm x1000"
     private lateinit var chunkColors: List<Int>
 
-    private val numChunks = 25 // Decreased for a more modern, seamless look
+    private val numChunks = 25
     private val chunkWidth = 8f
     private val chunkGap = 2f
 
     init {
-        configure(0f, 10000f, "rpm x1000")
+        configure(minValue, maxValue, unit)
     }
 
     fun configure(min: Float, max: Float, unitLabel: String) {
@@ -64,12 +61,18 @@ class SeekBarView @JvmOverloads constructor(
 
     private fun updateChunkColors() {
         chunkColors = listOf(
-            Color.parseColor("#222222"), // Near-black (start)
-            Color.parseColor("#444444"), // Dark gray
+            Color.parseColor("#2C2C2C"), // Soft black
+            Color.parseColor("#3D3D3D"), // Charcoal
+            Color.parseColor("#5F5F5F"), // Slate
             Color.parseColor("#888888"), // Medium gray
-            Color.parseColor("#FF6A00"), // Neon Orange
-            Color.parseColor("#FF3A3A"), // Bright Red
-            Color.parseColor("#FF0000")  // Neon Max Red
+            Color.parseColor("#A020F0"), // Neon purple
+            Color.parseColor("#FF1493"), // Neon pink
+            Color.parseColor("#FF4500"), // Neon orange
+            Color.parseColor("#FF3A3A"), // Bright red
+            Color.parseColor("#FF0000"), // Max red
+            Color.parseColor("#D40000"), // Deep red
+            Color.parseColor("#B00000"), // Darker red
+            Color.parseColor("#8B0000")  // Dark red for final punch
         )
     }
 
@@ -103,7 +106,7 @@ class SeekBarView @JvmOverloads constructor(
             canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, barPaint)
         }
 
-        barPaint.color = Color.argb(50, 100, 100, 100)
+        barPaint.color = Color.argb(40, 100, 100, 100)
         for (i in progressChunks until numChunks) {
             val chunkStartX = barStartX + (scaledChunkWidth + scaledChunkGap) * i
             val rectF = RectF(
@@ -117,12 +120,12 @@ class SeekBarView @JvmOverloads constructor(
 
         drawMarkers(canvas, barStartX, barEndX, barY)
 
-        val textYAbove = barY - baseBarHeight - 15f
+        val textYAbove = barY - baseBarHeight - 20f
         drawLabel(canvas, minValue.roundToInt().toString(), barStartX, textYAbove, labelPaint)
         drawLabel(canvas, maxValue.roundToInt().toString(), barEndX, textYAbove, labelPaint)
         drawLabel(canvas, ((minValue + maxValue) / 2).roundToInt().toString(), (barStartX + barEndX) / 2, textYAbove, labelPaint)
 
-        val textYBelow = barY + baseBarHeight + 35f
+        val textYBelow = barY + baseBarHeight + 40f
         drawLabel(canvas, unit, (barStartX + barEndX) / 2, textYBelow, unitPaint)
 
         drawCurrentValue(canvas, progressX, barY, progressRatio)
@@ -156,7 +159,7 @@ class SeekBarView @JvmOverloads constructor(
         barPaint.style = Paint.Style.FILL
         canvas.drawPath(path, barPaint)
         val valueText = currentValue.roundToInt().toString()
-        val textY = y - baseBarHeight / 2 - indicatorSize - 10f
+        val textY = y - baseBarHeight / 2 - indicatorSize - 12f
         drawLabel(canvas, valueText, x, textY, labelPaint)
     }
 }
