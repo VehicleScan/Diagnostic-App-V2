@@ -35,7 +35,6 @@ class SeekBarView @JvmOverloads constructor(
     private val neonRed = Color.parseColor("#FF1744")
     private val inactiveColor = Color.parseColor("#444444")
     private val activeColor = Color.WHITE
-    private val padding = 60f
     private val arcRadius = 200f
     private val spacing = 40f
 
@@ -52,11 +51,18 @@ class SeekBarView @JvmOverloads constructor(
         invalidate()
     }
 
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val desiredHeight = (arcRadius + 20f + 30f + 36f + 20f).toInt() // arc + bar + label + value + padding
+        val height = resolveSize(desiredHeight, heightMeasureSpec)
+        val width = resolveSize(suggestedMinimumWidth, widthMeasureSpec)
+        setMeasuredDimension(width, height)
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        val centerX = width / 2f
-        val centerY = height / 2f - 40f
+        val centerX = width / 3f
+        val centerY = arcRadius + 150f
         val ratio = (currentValue - minValue) / (maxValue - minValue)
         val activeDashes = (dashCount * ratio).toInt()
         val thresholdIndex = (dashCount * 0.75f).toInt()
@@ -100,7 +106,6 @@ class SeekBarView @JvmOverloads constructor(
                 6f, 6f, barPaint
             )
 
-            // Draw actual value label above each bar
             val labelValue = (minValue + i * valuePerSegment).roundToInt()
             canvas.drawText("$labelValue", x, y - 30f, labelPaint)
         }
