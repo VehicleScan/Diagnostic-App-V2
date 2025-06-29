@@ -38,12 +38,22 @@ class SpeedometerView @JvmOverloads constructor(
     private var yellowEnd: Float = 90f + 0.85f * 230f
     private var redStart: Float = 90f + 0.85f * 230f
     private var redEnd: Float = 90f + 1f * 230f
+    private var yellowValueStart: Float = 0f
+    private var redValueStart: Float = 0f
 
     init {
         configure(minValue, maxValue, needleColor, yellowStart, yellowEnd, redStart, redEnd)
     }
 
-    fun configure(min: Float, max: Float, color: Int, yellowStartAngle: Float = 90f + 0.70f * 230f, yellowEndAngle: Float = 90f + 0.85f * 230f, redStartAngle: Float = 90f + 0.85f * 230f, redEndAngle: Float = 90f + 1f * 230f) {
+    fun configure(
+        min: Float,
+        max: Float,
+        color: Int,
+        yellowStartAngle: Float = 90f + 0.70f * 230f,
+        yellowEndAngle: Float = 90f + 0.85f * 230f,
+        redStartAngle: Float = 90f + 0.85f * 230f,
+        redEndAngle: Float = 90f + 1f * 230f
+    ) {
         require(min < max) { "minValue must be less than maxValue" }
         minValue = min
         maxValue = max
@@ -52,6 +62,11 @@ class SpeedometerView @JvmOverloads constructor(
         yellowEnd = yellowEndAngle
         redStart = redStartAngle
         redEnd = redEndAngle
+        // Calculate value thresholds for zones
+        yellowValueStart = minValue + (yellowStart - startAngle) / sweepAngle * (maxValue - minValue)
+        redValueStart = minValue + (redStart - startAngle) / sweepAngle * (maxValue - minValue)
+        // Clamp currentValue to the new range
+        currentValue = currentValue.coerceIn(minValue, maxValue)
         updateLabels()
         invalidate()
     }
@@ -99,13 +114,11 @@ class SpeedometerView @JvmOverloads constructor(
         for (value in majorLabels) {
             val angle = startAngle + ((value - minValue) / (maxValue - minValue)) * sweepAngle
             val rad = Math.toRadians(angle.toDouble()).toFloat()
-
             val innerX = centerX + (innerRadius - 20) * cos(rad)
             val innerY = centerY + (innerRadius - 20) * sin(rad)
             val outerX = centerX + innerRadius * cos(rad)
             val outerY = centerY + innerRadius * sin(rad)
             canvas.drawLine(innerX, innerY, outerX, outerY, paint)
-
             val textRadius = innerRadius - 40
             val textX = centerX + textRadius * cos(rad)
             val textY = centerY + textRadius * sin(rad) + 12
@@ -135,7 +148,14 @@ class SpeedometerView @JvmOverloads constructor(
         val endX = centerX + needleLength * cos(needleRad)
         val endY = centerY + needleLength * sin(needleRad)
         paint.strokeWidth = 6f
-        paint.color = needleColor
+        // Set needle color based on the current value's zone
+        if (currentValue >= redValueStart) {
+            paint.color = Color.RED
+        } else if (currentValue >= yellowValueStart) {
+            paint.color = Color.YELLOW
+        } else {
+            paint.color = needleColor
+        }
         canvas.drawLine(centerX, centerY, endX, endY, paint)
 
         // Center circle

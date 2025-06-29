@@ -1,7 +1,10 @@
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlin.random.Random
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -46,23 +49,21 @@ class HomeFragment : Fragment() {
         numberWindow.updateValue(0f)
 
 
-//        val handler = Handler(Looper.getMainLooper())
-//        val runnable = object : Runnable {
-//            override fun run() {
-//                val randomValue1 = 20f + (0..200).random().toFloat()
-//                speedometer1.updateValue(randomValue1)
-//                numberWindow.updateValue(randomValue1)
-//                val randomValue2 = 20f + (0..200).random().toFloat()
-//                speedometer2.updateValue(randomValue2)
-//                val oilTemp = 50f + (0..100).random().toFloat()
-//                oilTempSeekBar.updateValue(oilTemp)
-//                val tirePressure = 20f + (0..20).random().toFloat()
-//                tirePressureSeekBar.updateValue(tirePressure)
-//                val massAirFlow = 0f + (0..200).random().toFloat()
-//                massAirFlowSeekBar.updateValue(massAirFlow)
-//                handler.postDelayed(this, 2000)
-//            }
-//        }
-//        handler.postDelayed(runnable, 2000)
+        lifecycleScope.launch {
+            while (isActive) { // Continues until the coroutine is cancelled (e.g., when the Activity/Fragment is destroyed)
+                val randomValue1 = 20f + Random.nextInt(0, 201).toFloat()
+                speedometer1.updateValue(randomValue1)
+                numberWindow.updateValue(randomValue1)
+                val randomValue2 = 20f + Random.nextInt(0, 201).toFloat()
+                speedometer2.updateValue(randomValue2)
+                val oilTemp = 50f + Random.nextInt(0, 101).toFloat()
+                oilTempSeekBar.updateValue(oilTemp)
+                val tirePressure = 20f + Random.nextInt(0, 21).toFloat()
+                tirePressureSeekBar.updateValue(tirePressure)
+                val massAirFlow = 0f + Random.nextInt(0, 201).toFloat()
+                massAirFlowSeekBar.updateValue(massAirFlow)
+                delay(2000) // Delay for 2 seconds
+            }
+        }
     }
 }

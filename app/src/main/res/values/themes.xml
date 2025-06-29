@@ -6,4 +6,14 @@
     </style>
 
     <style name="Theme.Diagnostic333" parent="Base.Theme.Diagnostic333" />
+    <style name="AppDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:background">#000000</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColorSecondary">#FF0000</item>
+        <item name="buttonBarPositiveButtonStyle">@style/DialogButtonStyle</item>
+    </style>
+
+    <style name="DialogButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textColor">#FF0000</item>
+    </style>
 </resources>
